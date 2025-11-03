@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sorting Visualizer — Algorithms</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <header class="container">
+      <h1>Sorting Visualizer</h1>
+      <p>
+        Pick an algorithm from the toolbar below, then click “Start
+        Visualization”
+      </p>
+    </header>
+
+    <nav class="container toolbar" aria-label="Sorting algorithms">
+      <button class="algo-btn" data-algo="bubble">Bubble Sort</button>
+      <button class="algo-btn" data-algo="insertion">Insertion Sort</button>
+      <button class="algo-btn" data-algo="merge">Merge Sort</button>
+      <button class="algo-btn" data-algo="quick">Quick Sort</button>
+    </nav>
+
+    <main class="container viz">
+      <div
+        class="viz-placeholder"
+        role="region"
+        aria-label="Visualization area"
+      >
+        <div id="status-text" class="status-text">Ready</div>
+        <div class="array-display">
+          {% for num in array %}
+          <div class="array-element" data-value="{{ num }}">{{ num }}</div>
+          {% endfor %}
+        </div>
+        <div class="controls">
+          <button id="start-btn" class="start-btn">Start Visualization</button>
+        </div>
+      </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+  </body>
+</html>

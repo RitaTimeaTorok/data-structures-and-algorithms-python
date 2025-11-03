@@ -1,0 +1,153 @@
+:root {
+  --bg: #0b1020;
+  --card: #151a2c;
+  --text: #e6e8f0;
+  --muted: #a7afc7;
+  --accent: #4da3ff;
+  --btn: #202742;
+  --btn-hover: #2a3357;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: radial-gradient(1200px 800px at 20% -10%, #1c2442 0%, var(--bg) 45%) no-repeat;
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 0 0 8px;
+}
+
+p { color: var(--muted); margin: 0 0 24px; }
+
+/* Toolbar with 4 items on a single row */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  justify-content: space-between;
+  flex-wrap: nowrap;        /* keep them all on one row */
+  overflow-x: auto;         /* allow horizontal scroll on very small screens */
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+}
+
+.algo-btn {
+  flex: 1 1 0;
+  border: 0;
+  padding: 14px 16px;
+  border-radius: calc(var(--radius) - 4px);
+  background: linear-gradient(180deg, var(--btn), var(--btn-hover));
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: transform 0.08s ease, filter 0.15s ease, box-shadow 0.2s ease;
+  white-space: nowrap; /* keep button text on one line */
+}
+
+.algo-btn:hover, .algo-btn:focus {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  outline: none;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35), 0 0 0 2px rgba(77,163,255,0.25) inset;
+}
+
+.viz {
+  margin-top: 20px;
+}
+
+.viz-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #12182c, #0e1430);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.array-display {
+  margin-top: 20px;
+  display: flex;
+  align-items: flex-end;   /* bars grow upward */
+  justify-content: center;
+  gap: 6px;
+  height: 250px;           /* overall visualization height */
+}
+
+.array-element {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 35px;
+  background: #5050a1;     /* default purple-blue bar */
+  border-radius: 4px 4px 0 0;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: white;
+  transition:
+    height 0.4s ease,      /* smooth height changes */
+    background-color 0.2s ease;
+}
+
+.algo-btn.active {
+  background: linear-gradient(180deg, var(--accent), #3b4cb7);
+  box-shadow: 0 0 12px rgba(145,170,250,0.6);
+}
+
+
+/* Start Visualization button — styled to match toolbar buttons */
+.controls {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.start-btn {
+  display: inline-block;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: calc(var(--radius) - 4px);
+  background: linear-gradient(180deg, var(--btn), var(--btn-hover));
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 0.08s ease, filter 0.15s ease, box-shadow 0.2s ease;
+}
+
+.start-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.status-text {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  font-weight: 600;
+  color: #91aafaff;
+  font-size: 0.95rem;
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.viz-placeholder {
+  position: relative;
+}
