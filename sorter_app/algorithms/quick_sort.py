@@ -1,7 +1,8 @@
 from random import randint
+from typing import List, Union
 
 
-def quick_sort(array):
+def quick_sort(array: List[Union[int, float]]):
     """
     Perform QuickSort and record steps for visualization.
 

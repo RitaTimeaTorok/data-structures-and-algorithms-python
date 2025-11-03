@@ -35,6 +35,8 @@ def sort_insertion():
 
     if not isinstance(arr, list):
         return jsonify({"error": "Body must include 'array' as a JSON list."}), 400
+    if not all(isinstance(x, (int, float)) for x in arr):
+        return jsonify({"error": "All elements in 'array' must be numbers."}), 400
 
     steps = insertion_sort(arr)
     return jsonify({"algorithm": "insertion", "steps": steps})
@@ -47,6 +49,8 @@ def sort_merge():
 
     if not isinstance(arr, list):
         return jsonify({"error": "Body must include 'array' as a JSON list."}), 400
+    if not all(isinstance(x, (int, float)) for x in arr):
+        return jsonify({"error": "All elements in 'array' must be numbers."}), 400
 
     steps = merge_sort(arr)
     return jsonify({"algorithm": "merge", "steps": steps})
@@ -59,6 +63,8 @@ def sort_quick():
 
     if not isinstance(arr, list):
         return jsonify({"error": "Body must include 'array' as a JSON list."}), 400
+    if not all(isinstance(x, (int, float)) for x in arr):
+        return jsonify({"error": "All elements in 'array' must be numbers."}), 400
 
     steps = quick_sort(arr)
     return jsonify({"algorithm": "quick", "steps": steps})

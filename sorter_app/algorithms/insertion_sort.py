@@ -1,4 +1,7 @@
-def insertion_sort(array):
+from typing import List, Union
+
+
+def insertion_sort(array: List[Union[int, float]]):
     """
     Perform insertion sort conceptually (without modifying the original array)
     and record each comparison, shift, and insertion.

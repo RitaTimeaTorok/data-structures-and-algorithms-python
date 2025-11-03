@@ -1,4 +1,7 @@
-def merge_sort(array):
+from typing import List, Union
+
+
+def merge_sort(array: List[Union[int, float]]):
     """
     Perform merge sort and record steps for visualization.
     Each step is one of:

@@ -1,4 +1,7 @@
-def bubble_sort(array):
+from typing import List, Union
+
+
+def bubble_sort(array: List[Union[int, float]]):
     """
     Perform bubble sort conceptually (without modifying the original array)
     and record each comparison and swap decision.
