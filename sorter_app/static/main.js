@@ -2,14 +2,21 @@ let selectedAlgorithm = "bubble";
 let animationSpeed = 300; // ms
 
 // ---------- DOM helpers ----------
+
+// Collect the array elements (each bar is a <div class="array-element">)
 function getArrayElements() {
   return Array.from(document.querySelectorAll(".array-element"));
 }
+
+// Get the numeric values from the array elements' data-value attributes
 function getArrayValues() {
   return getArrayElements().map((el) => parseInt(el.dataset.value, 10));
 }
+
+// Helper to pause the animation
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+// Updates the status text area in the top-left corner
 function setStatus(text) {
   const statusEl = document.getElementById("status-text");
   if (statusEl) statusEl.textContent = text;
@@ -26,6 +33,7 @@ const finalColor = "#7fa6ff";
 const pivotColor = "#00a3c4ff";
 
 // -------- setup ----------
+
 document.addEventListener("DOMContentLoaded", () => {
   // Set initial bar heights from data-value
   getArrayElements().forEach((el) => {
@@ -55,6 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ---------- visualization control ----------
+
+// Read the current array, send a POST to backend, and run the visualization
 async function startVisualization() {
   const arr = getArrayValues();
   const startBtn = document.getElementById("start-btn");
@@ -94,6 +104,7 @@ async function startVisualization() {
 }
 
 // ---------- Bubble Sort ----------
+
 async function visualizeBubble(steps) {
   const elements = getArrayElements();
   setStatus("Starting Bubble Sort...");
@@ -146,6 +157,7 @@ async function visualizeBubble(steps) {
 }
 
 // ---------- Insertion Sort ----------
+
 async function visualizeInsertion(steps) {
   const elements = getArrayElements();
   setStatus("Starting Insertion Sort...");
@@ -217,6 +229,7 @@ async function visualizeInsertion(steps) {
 }
 
 // ---------- Merge Sort ----------
+
 async function visualizeMerge(steps) {
   const elements = getArrayElements();
   setStatus("Starting Merge Sort...");
@@ -273,6 +286,7 @@ async function visualizeMerge(steps) {
 }
 
 // ---------- Quick Sort ----------
+
 async function visualizeQuick(steps) {
   const elements = getArrayElements();
   setStatus("Starting Quick Sort...");
@@ -343,6 +357,8 @@ async function visualizeQuick(steps) {
   await delay(400);
   for (const el of elements) el.style.backgroundColor = normal;
 }
+
+// ---------- Custom Array Input & File Upload ----------
 
 // Parse and validate comma-separated input into a number array
 function parseArrayInput(text) {
@@ -420,6 +436,7 @@ if (applyBtn && inputEl && errorEl) {
 }
 
 // ---- File upload handler ----
+
 const uploadBtn = document.getElementById("upload-array");
 const fileInput = document.getElementById("array-file");
 const fileError = document.getElementById("file-error");
