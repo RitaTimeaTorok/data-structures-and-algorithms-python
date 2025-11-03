@@ -1,10 +1,12 @@
 from flask import Flask, render_template  # type: ignore
 from routes.sorting_routes import sorting_blueprint
+from routes.upload_routes import upload_blueprint
 import random
 
 app = Flask(__name__)
 
 app.register_blueprint(sorting_blueprint)
+app.register_blueprint(upload_blueprint)
 
 
 @app.route("/")

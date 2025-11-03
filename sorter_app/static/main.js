@@ -1,5 +1,3 @@
-// main.js — visualize Bubble, Insertion & Merge Sort with on-screen step status
-
 let selectedAlgorithm = "bubble";
 let animationSpeed = 300; // ms
 
@@ -45,6 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
       setStatus(`Selected: ${btn.textContent}`);
     });
   });
+
+  // Mark Bubble as active on initial load
+  const defaultBtn = document.querySelector('.algo-btn[data-algo="bubble"]');
+  if (defaultBtn) defaultBtn.classList.add("active");
 
   // Start visualization
   document
@@ -340,4 +342,119 @@ async function visualizeQuick(steps) {
   for (const el of elements) el.style.backgroundColor = finalColor;
   await delay(400);
   for (const el of elements) el.style.backgroundColor = normal;
+}
+
+// Parse and validate comma-separated input into a number array
+function parseArrayInput(text) {
+  if (typeof text !== "string")
+    return { ok: false, error: "Input must be text." };
+
+  const parts = text
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  if (parts.length === 0)
+    return { ok: false, error: "Please enter at least one number." };
+
+  const nums = parts.map((n) => Number(n));
+  if (nums.some((n) => !Number.isFinite(n))) {
+    return {
+      ok: false,
+      error: "All items must be valid numbers (use commas to separate).",
+    };
+  }
+
+  return { ok: true, value: nums };
+}
+
+// Replace the bar elements with a new array of values
+function renderArray(values) {
+  const display = document.querySelector(".array-display");
+  if (!display) return;
+
+  // Build new children: one div per value
+  const frag = document.createDocumentFragment();
+  values.forEach((val) => {
+    const el = document.createElement("div");
+    el.className = "array-element";
+    el.dataset.value = String(val);
+    el.textContent = String(val);
+    el.style.height = val * 2 + "px"; // keep your 2x scale factor
+    frag.appendChild(el);
+  });
+
+  // Clear and append
+  display.innerHTML = "";
+  display.appendChild(frag);
+
+  // Optional: reset status text
+  setStatus("Array updated. Pick an algorithm and press Start Visualization.");
+}
+
+// Handle custom array submission
+const applyBtn = document.getElementById("apply-array");
+const inputEl = document.getElementById("array-input");
+const errorEl = document.getElementById("array-error");
+
+if (applyBtn && inputEl && errorEl) {
+  applyBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const { ok, value, error } = parseArrayInput(inputEl.value);
+
+    if (!ok) {
+      errorEl.textContent = error || "Invalid input.";
+      return;
+    }
+
+    // Clear error, render new bars
+    errorEl.textContent = "";
+    renderArray(value);
+  });
+
+  // Enter key submits as well
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      applyBtn.click();
+    }
+  });
+}
+
+// ---- File upload handler ----
+const uploadBtn = document.getElementById("upload-array");
+const fileInput = document.getElementById("array-file");
+const fileError = document.getElementById("file-error");
+
+if (uploadBtn && fileInput && fileError) {
+  uploadBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    fileError.textContent = "";
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+      fileError.textContent = "Please choose a file first.";
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("file", fileInput.files[0]);
+
+    try {
+      setStatus("Uploading file...");
+      const res = await fetch("/array/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed.");
+
+      // success: re-render bars
+      renderArray(data.array);
+      setStatus(data.message || "File uploaded successfully!");
+      fileError.style.color = "#8fff8f"; // green success text
+      fileError.textContent = data.message || "Upload successful!";
+
+      // clear file input
+      fileInput.value = "";
+    } catch (err) {
+      fileError.style.color = "#ff8f8f";
+      fileError.textContent = err.message;
+      setStatus("Error: " + err.message);
+    }
+  });
 }

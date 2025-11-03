@@ -41,6 +41,30 @@
           <button id="start-btn" class="start-btn">Start Visualization</button>
         </div>
       </div>
+      <!-- Custom -->
+      <div class="input-panel">
+        <label for="array-input">Custom array (comma-separated numbers):</label>
+        <div class="input-row">
+          <input
+            id="array-input"
+            type="text"
+            placeholder="e.g., 5, 3, 1, 4, 2"
+          />
+          <button id="apply-array" class="start-btn">Submit</button>
+        </div>
+        <div id="array-error" class="error-text" aria-live="polite"></div>
+      </div>
+      <!-- File upload panel -->
+      <div class="input-panel file-panel">
+        <label for="array-file"
+          >Upload CSV/TXT (comma-separated numbers):</label
+        >
+        <div class="input-row">
+          <input id="array-file" type="file" accept=".csv,text/csv,.txt" />
+          <button id="upload-array" class="start-btn">Upload</button>
+        </div>
+        <div id="file-error" class="error-text" aria-live="polite"></div>
+      </div>
     </main>
 
     <script src="{{ url_for('static', filename='main.js') }}"></script>
