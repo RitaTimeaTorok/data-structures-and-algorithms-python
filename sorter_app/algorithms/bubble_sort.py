@@ -13,8 +13,8 @@ def bubble_sort(array: List[Union[int, float]]):
           "swap": True if a swap occurs, False otherwise
         }
     """
-    a = list(array)
-    n = len(a)
+    array_copy = list(array)
+    n = len(array_copy)
     trace = []
 
     for i in range(n):
@@ -23,8 +23,8 @@ def bubble_sort(array: List[Union[int, float]]):
         for j in range(n - i - 1):
             step = {"i": j, "j": j + 1, "swap": False}
 
-            if a[j] > a[j + 1]:
-                a[j], a[j + 1] = a[j + 1], a[j]
+            if array_copy[j] > array_copy[j + 1]:
+                array_copy[j], array_copy[j + 1] = array_copy[j + 1], array_copy[j]
                 step["swap"] = True
                 already_sorted = False
 

@@ -10,7 +10,7 @@ def merge_sort(array: List[Union[int, float]]):
       - {"type": "split", "start": s, "mid": m, "end": e}
     """
 
-    a = list(array)
+    array_copy = list(array)
     steps = []
 
     def _merge_sort(arr, left, right):
@@ -30,26 +30,26 @@ def merge_sort(array: List[Union[int, float]]):
 
         while i < mid and j < right:
             steps.append({"type": "compare", "i": i, "j": j})
-            if a[i] <= a[j]:
-                merged.append(a[i])
+            if array_copy[i] <= array_copy[j]:
+                merged.append(array_copy[i])
                 i += 1
             else:
-                merged.append(a[j])
+                merged.append(array_copy[j])
                 j += 1
 
         while i < mid:
-            merged.append(a[i])
+            merged.append(array_copy[i])
             i += 1
         while j < right:
-            merged.append(a[j])
+            merged.append(array_copy[j])
             j += 1
 
         # copy merged back and record overwrites
         # we copy the merged values back into the original array into the correct positions
         # helps the frontend with the height animation
         for k, val in enumerate(merged):
-            a[left + k] = val
+            array_copy[left + k] = val
             steps.append({"type": "overwrite", "index": left + k, "value": val})
 
-    _merge_sort(a, 0, len(a))
+    _merge_sort(array_copy, 0, len(array_copy))
     return steps

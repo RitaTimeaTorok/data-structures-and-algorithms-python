@@ -14,27 +14,29 @@ def upload_array():
     if "file" not in request.files:
         return jsonify({"error": "No file field named 'file'."}), 400
 
-    f = request.files["file"]
-    if f.filename == "":
+    request_file = request.files["file"]
+    if request_file.filename == "":
         return jsonify({"error": "No selected file."}), 400
 
     try:
-        content = f.read().decode("utf-8", errors="ignore")
-        tokens = [s.strip() for s in re.split(r"[,\s]+", content) if s.strip()]
+        content = request_file.read().decode("utf-8", errors="ignore")
+        tokens = [
+            token.strip() for token in re.split(r"[,\s]+", content) if token.strip()
+        ]
         if not tokens:
             return jsonify({"error": "No numbers found in file."}), 400
 
-        nums = []
-        for s in tokens:
-            val = float(s)
+        numbers = []
+        for token in tokens:
+            val = float(token)
             if val.is_integer():
                 val = int(val)
-            nums.append(val)
+            numbers.append(val)
 
         return jsonify(
             {
-                "message": f"Upload successful. {len(nums)} numbers loaded.",
-                "array": nums,
+                "message": f"Upload successful. {len(numbers)} numbers loaded.",
+                "array": numbers,
             }
         )
 
