@@ -5,6 +5,7 @@ from algorithms.merge_sort import merge_sort
 from algorithms.quick_sort import quick_sort
 
 # A Blueprint is like a mini app we can plug into the main Flask app
+# a way to organize flask routes into reusable modules
 sorting_blueprint = Blueprint("sorting", __name__)
 
 
