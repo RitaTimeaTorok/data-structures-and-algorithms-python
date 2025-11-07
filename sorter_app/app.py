@@ -14,7 +14,17 @@ app.register_blueprint(ds_blueprint)
 @app.route("/")
 def index():
     random_array = [random.randint(1, 100) for _ in range(10)]
-    return render_template("index.html", array=random_array)
+    stack_init = [random.randint(5, 99) for _ in range(7)]
+    queue_init = [random.randint(5, 99) for _ in range(7)]
+    linked_init = [random.randint(5, 99) for _ in range(6)]
+
+    return render_template(
+        "index.html",
+        array=random_array,
+        stack_init=stack_init,
+        queue_init=queue_init,
+        linked_init=linked_init,
+    )
 
 
 if __name__ == "__main__":

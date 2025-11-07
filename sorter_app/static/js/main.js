@@ -3,20 +3,16 @@ let animationSpeed = 300; // ms
 
 // ---------- DOM helpers ----------
 
-// Collect the array elements (each bar is a <div class="array-element">)
 function getArrayElements() {
   return Array.from(document.querySelectorAll(".array-element"));
 }
 
-// Get the numeric values from the array elements' data-value attributes
 function getArrayValues() {
   return getArrayElements().map((el) => parseInt(el.dataset.value, 10));
 }
 
-// Helper to pause the animation
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-// Updates the status text area in the top-left corner
 function setStatus(text) {
   const statusEl = document.getElementById("status-text");
   if (statusEl) statusEl.textContent = text;
@@ -25,12 +21,183 @@ function setStatus(text) {
 // Theme colors
 const normal = "#5050a1";
 const highlight = "#91aafaff";
-const keyColor = "#a0b3ff";
+const keyColor = "#a0b3ff"; // we'll use this for HEAD
 const mergeLeft = "#99baff";
 const mergeRight = "#7189ff";
 const mergeWrite = "#8db1ff";
 const finalColor = "#7fa6ff";
 const pivotColor = "#00a3c4ff";
+
+// -------- DS rendering helpers ----------
+
+function clearDSCanvas() {
+  const dsCanvas = document.getElementById("ds-canvas");
+  if (dsCanvas) dsCanvas.innerHTML = "";
+}
+
+function parseInitData(attrValue) {
+  try {
+    if (!attrValue) return [];
+    const arr = JSON.parse(attrValue);
+    return Array.isArray(arr) ? arr.map((n) => Number(n)) : [];
+  } catch {
+    return [];
+  }
+}
+
+function createDSItem(value) {
+  const item = document.createElement("div");
+  item.className = "ds-item";
+  item.style.background = normal;
+  item.style.color = "#fff";
+  item.style.fontWeight = "700";
+  item.style.borderRadius = "6px";
+  item.style.display = "flex";
+  item.style.alignItems = "center";
+  item.style.justifyContent = "center";
+  item.style.minWidth = "48px";
+  item.style.minHeight = "36px";
+  item.style.padding = "6px 10px";
+  item.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)";
+  item.textContent = String(value);
+  item.dataset.value = String(value);
+  return item;
+}
+
+function renderStack(values) {
+  const dsCanvas = document.getElementById("ds-canvas");
+  if (!dsCanvas) return;
+  clearDSCanvas();
+
+  const col = document.createElement("div");
+  col.className = "ds-stack";
+  col.style.display = "flex";
+  col.style.flexDirection = "column";
+  col.style.alignItems = "center";
+  col.style.justifyContent = "flex-start";
+  col.style.gap = "8px";
+  col.style.padding = "16px";
+
+  values.forEach((v) => col.appendChild(createDSItem(v)));
+  dsCanvas.appendChild(col);
+}
+
+function renderQueue(values) {
+  const dsCanvas = document.getElementById("ds-canvas");
+  if (!dsCanvas) return;
+  clearDSCanvas();
+
+  const row = document.createElement("div");
+  row.className = "ds-queue";
+  row.style.display = "flex";
+  row.style.flexDirection = "row";
+  row.style.alignItems = "center";
+  row.style.justifyContent = "center";
+  row.style.gap = "8px";
+  row.style.padding = "16px";
+
+  values.forEach((v) => row.appendChild(createDSItem(v)));
+  dsCanvas.appendChild(row);
+}
+
+// ---- Linked List render (NEW) ----
+function createDSNode(value, isHead = false) {
+  const node = document.createElement("div");
+  node.className = "ds-node";
+  node.style.background = isHead ? keyColor : normal; // head highlighted
+  node.style.color = "#fff";
+  node.style.fontWeight = "700";
+  node.style.borderRadius = "10px";
+  node.style.display = "flex";
+  node.style.alignItems = "center";
+  node.style.justifyContent = "center";
+  node.style.minWidth = "56px";
+  node.style.minHeight = "42px";
+  node.style.padding = "6px 12px";
+  node.style.boxShadow = "0 2px 10px rgba(0,0,0,0.35)";
+  node.style.position = "relative";
+  node.textContent = String(value);
+  return node;
+}
+
+function createLink() {
+  // simple arrow link using text; easy to restyle later
+  const link = document.createElement("div");
+  link.className = "ds-link";
+  link.textContent = "→";
+  link.style.opacity = "0.7";
+  link.style.fontWeight = "800";
+  link.style.fontSize = "20px";
+  link.style.margin = "0 6px";
+  link.style.userSelect = "none";
+  return link;
+}
+
+function renderLinkedList(values) {
+  const dsCanvas = document.getElementById("ds-canvas");
+  if (!dsCanvas) return;
+  clearDSCanvas();
+
+  const row = document.createElement("div");
+  row.className = "ds-linked-list";
+  row.style.display = "flex";
+  row.style.flexDirection = "row";
+  row.style.alignItems = "center";
+  row.style.justifyContent = "center";
+  row.style.gap = "6px";
+  row.style.padding = "16px";
+  row.style.flexWrap = "wrap"; // if it overflows
+
+  // create nodes with links between them
+  values.forEach((v, idx) => {
+    const isHead = idx === 0;
+    const node = createDSNode(v, isHead);
+
+    // optional small HEAD tag
+    if (isHead) {
+      const badge = document.createElement("div");
+      badge.textContent = "HEAD";
+      badge.style.position = "absolute";
+      badge.style.top = "-18px";
+      badge.style.fontSize = "10px";
+      badge.style.fontWeight = "800";
+      badge.style.letterSpacing = "0.3px";
+      badge.style.color = "#e6e8f0";
+      badge.style.opacity = "0.9";
+      row.appendChild(badge); // attach before to keep near head
+      // place badge just before node visually
+      const wrap = document.createElement("div");
+      wrap.style.display = "flex";
+      wrap.style.flexDirection = "column";
+      wrap.style.alignItems = "center";
+      wrap.style.marginRight = "6px";
+      wrap.appendChild(badge);
+      wrap.appendChild(node);
+      row.appendChild(wrap);
+    } else {
+      row.appendChild(node);
+    }
+
+    if (idx < values.length - 1) {
+      row.appendChild(createLink());
+    }
+  });
+
+  dsCanvas.appendChild(row);
+}
+
+function renderLinkedListPlaceholder() {
+  const dsCanvas = document.getElementById("ds-canvas");
+  if (!dsCanvas) return;
+  clearDSCanvas();
+
+  const note = document.createElement("div");
+  note.style.opacity = "0.6";
+  note.style.fontWeight = "600";
+  note.style.letterSpacing = "0.3px";
+  note.textContent = "Linked List canvas (coming soon)";
+  dsCanvas.appendChild(note);
+}
 
 // -------- setup ----------
 
@@ -41,18 +208,25 @@ document.addEventListener("DOMContentLoaded", () => {
     el.style.height = val * 2 + "px";
   });
 
-  // View sections for toggling (added)
+  // View sections for toggling
   const sortUI = document.getElementById("sort-ui");
   const dsCanvas = document.getElementById("ds-canvas");
   const customArrayPanel = document.getElementById("custom-array-panel");
   const fileUploadPanel = document.getElementById("file-upload-panel");
 
-  // Helpers to toggle minimal UI changes (added)
+  // Pre-read initial DS data from server
+  const initialStack = parseInitData(dsCanvas?.dataset.stack);
+  const initialQueue = parseInitData(dsCanvas?.dataset.queue);
+  const initialLinked = parseInitData(dsCanvas?.dataset.linked); // NEW
+
   function showForSort(name) {
     if (sortUI) sortUI.classList.remove("hidden");
     if (customArrayPanel) customArrayPanel.classList.remove("hidden");
     if (fileUploadPanel) fileUploadPanel.classList.remove("hidden");
-    if (dsCanvas) dsCanvas.classList.add("hidden");
+    if (dsCanvas) {
+      dsCanvas.classList.add("hidden");
+      clearDSCanvas();
+    }
     setStatus(`Sorting mode: ${name}`);
   }
 
@@ -64,11 +238,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setStatus(`Data Structure mode: ${name}`);
   }
 
-  // Algorithm selector buttons
+  // Toolbar buttons
   const algoButtons = document.querySelectorAll(".algo-btn");
   algoButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      // Clear selection styles
       algoButtons.forEach((b) => b.classList.remove("active", "selected"));
       btn.classList.add("active", "selected");
 
@@ -76,24 +249,36 @@ document.addEventListener("DOMContentLoaded", () => {
       const algo = btn.getAttribute("data-algo"); // "bubble", "stack", etc.
 
       if (type === "sort") {
-        selectedAlgorithm = algo; // keep using existing sort flow
+        selectedAlgorithm = algo;
         showForSort(btn.textContent.trim());
       } else {
-        // In DS mode we keep a clean canvas; prevent sort POST accidentally
         selectedAlgorithm = null;
         showForDS(btn.textContent.trim());
+
+        if (algo === "stack") {
+          renderStack(initialStack);
+          setStatus("Stack: initial values from server.");
+        } else if (algo === "queue") {
+          renderQueue(initialQueue);
+          setStatus("Queue: initial values from server.");
+        } else if (algo === "linked-list") {
+          renderLinkedList(initialLinked); // NEW
+          setStatus(
+            "Linked List: initial values from server (head highlighted)."
+          );
+        } else {
+          clearDSCanvas();
+        }
       }
     });
   });
 
-  // Default: mark Bubble as active and show sorting UI
+  // Default: Bubble
   const defaultBtn = document.querySelector('.algo-btn[data-algo="bubble"]');
   if (defaultBtn) {
     defaultBtn.classList.add("active", "selected");
-    // Ensure correct initial visibility (sorting mode shown by default)
     showForSort(defaultBtn.textContent.trim());
   } else {
-    // Fallback: nothing selected
     if (sortUI) sortUI.classList.add("hidden");
     if (dsCanvas) dsCanvas.classList.add("hidden");
     if (customArrayPanel) customArrayPanel.classList.add("hidden");
@@ -110,9 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ---------- visualization control ----------
 
-// Read the current array, send a POST to backend, and run the visualization
 async function startVisualization() {
-  // Guard: only run when a sorting algorithm is selected
   const allowedSorts = new Set(["bubble", "insertion", "merge", "quick"]);
   if (!selectedAlgorithm || !allowedSorts.has(selectedAlgorithm)) {
     setStatus("Please select a sorting algorithm.");
@@ -134,7 +317,6 @@ async function startVisualization() {
     if (!res.ok) throw new Error("Request failed");
 
     const data = await res.json();
-    console.log(`${selectedAlgorithm} trace:`, data.steps);
 
     if (selectedAlgorithm === "bubble") {
       await visualizeBubble(data.steps);
@@ -183,12 +365,10 @@ async function visualizeBubble(steps) {
     await delay(animationSpeed);
 
     if (swap) {
-      // swap dataset values
       const tempVal = el1.dataset.value;
       el1.dataset.value = el2.dataset.value;
       el2.dataset.value = tempVal;
 
-      // swap text and height
       const tempText = el1.textContent;
       el1.textContent = el2.textContent;
       el2.textContent = tempText;
@@ -375,12 +555,10 @@ async function visualizeQuick(steps) {
       const el1 = elements[step.i];
       const el2 = elements[step.j];
 
-      // swap dataset values
       const tempVal = el1.dataset.value;
       el1.dataset.value = el2.dataset.value;
       el2.dataset.value = tempVal;
 
-      // swap text & height
       const tempText = el1.textContent;
       el1.textContent = el2.textContent;
       el2.textContent = tempText;
@@ -400,7 +578,7 @@ async function visualizeQuick(steps) {
       setStatus(
         `Step ${stepNum++}/${total}: Pivot placed at index ${step.index}`
       );
-      elements[step.index].style.backgroundColor = keyColor; // violet for finalized pivot
+      elements[step.index].style.backgroundColor = keyColor;
       await delay(animationSpeed);
     }
   }
@@ -413,7 +591,6 @@ async function visualizeQuick(steps) {
 
 // ---------- Custom Array Input & File Upload ----------
 
-// Parse and validate comma-separated input into a number array
 function parseArrayInput(text) {
   if (typeof text !== "string")
     return { ok: false, error: "Input must be text." };
@@ -436,31 +613,26 @@ function parseArrayInput(text) {
   return { ok: true, value: nums };
 }
 
-// Replace the bar elements with a new array of values
 function renderArray(values) {
   const display = document.querySelector(".array-display");
   if (!display) return;
 
-  // Build new children: one div per value
   const frag = document.createDocumentFragment();
   values.forEach((val) => {
     const el = document.createElement("div");
     el.className = "array-element";
     el.dataset.value = String(val);
     el.textContent = String(val);
-    el.style.height = val * 2 + "px"; // keep your 2x scale factor
+    el.style.height = val * 2 + "px";
     frag.appendChild(el);
   });
 
-  // Clear and append
   display.innerHTML = "";
   display.appendChild(frag);
 
-  // Optional: reset status text
   setStatus("Array updated. Pick an algorithm and press Start Visualization.");
 }
 
-// Handle custom array submission
 const applyBtn = document.getElementById("apply-array");
 const inputEl = document.getElementById("array-input");
 const errorEl = document.getElementById("array-error");
@@ -475,12 +647,10 @@ if (applyBtn && inputEl && errorEl) {
       return;
     }
 
-    // Clear error, render new bars
     errorEl.textContent = "";
     renderArray(value);
   });
 
-  // Enter key submits as well
   inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       applyBtn.click();
@@ -513,13 +683,10 @@ if (uploadBtn && fileInput && fileError) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed.");
 
-      // success: re-render bars
       renderArray(data.array);
       setStatus(data.message || "File uploaded successfully!");
-      fileError.style.color = "#8fff8f"; // green success text
+      fileError.style.color = "#8fff8f";
       fileError.textContent = data.message || "Upload successful!";
-
-      // clear file input
       fileInput.value = "";
     } catch (err) {
       fileError.style.color = "#ff8f8f";

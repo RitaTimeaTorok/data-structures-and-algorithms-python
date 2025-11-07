@@ -73,6 +73,9 @@
           id="ds-canvas"
           class="ds-canvas hidden"
           aria-label="Data structure canvas"
+          data-stack="{{ stack_init | tojson }}"
+          data-queue="{{ queue_init | tojson }}"
+          data-linked="{{ linked_init | tojson }}"
         >
           <!-- Intentionally empty. You’ll render DS here later. -->
         </section>
@@ -104,6 +107,6 @@
       </div>
     </main>
 
-    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   </body>
 </html>
