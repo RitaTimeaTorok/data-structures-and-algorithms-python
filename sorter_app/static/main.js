@@ -41,31 +41,84 @@ document.addEventListener("DOMContentLoaded", () => {
     el.style.height = val * 2 + "px";
   });
 
+  // View sections for toggling (added)
+  const sortUI = document.getElementById("sort-ui");
+  const dsCanvas = document.getElementById("ds-canvas");
+  const customArrayPanel = document.getElementById("custom-array-panel");
+  const fileUploadPanel = document.getElementById("file-upload-panel");
+
+  // Helpers to toggle minimal UI changes (added)
+  function showForSort(name) {
+    if (sortUI) sortUI.classList.remove("hidden");
+    if (customArrayPanel) customArrayPanel.classList.remove("hidden");
+    if (fileUploadPanel) fileUploadPanel.classList.remove("hidden");
+    if (dsCanvas) dsCanvas.classList.add("hidden");
+    setStatus(`Sorting mode: ${name}`);
+  }
+
+  function showForDS(name) {
+    if (sortUI) sortUI.classList.add("hidden");
+    if (customArrayPanel) customArrayPanel.classList.add("hidden");
+    if (fileUploadPanel) fileUploadPanel.classList.add("hidden");
+    if (dsCanvas) dsCanvas.classList.remove("hidden");
+    setStatus(`Data Structure mode: ${name}`);
+  }
+
   // Algorithm selector buttons
   const algoButtons = document.querySelectorAll(".algo-btn");
   algoButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      selectedAlgorithm = btn.dataset.algo;
-      algoButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      setStatus(`Selected: ${btn.textContent}`);
+      // Clear selection styles
+      algoButtons.forEach((b) => b.classList.remove("active", "selected"));
+      btn.classList.add("active", "selected");
+
+      const type = btn.getAttribute("data-type"); // "sort" | "ds"
+      const algo = btn.getAttribute("data-algo"); // "bubble", "stack", etc.
+
+      if (type === "sort") {
+        selectedAlgorithm = algo; // keep using existing sort flow
+        showForSort(btn.textContent.trim());
+      } else {
+        // In DS mode we keep a clean canvas; prevent sort POST accidentally
+        selectedAlgorithm = null;
+        showForDS(btn.textContent.trim());
+      }
     });
   });
 
-  // Mark Bubble as active on initial load
+  // Default: mark Bubble as active and show sorting UI
   const defaultBtn = document.querySelector('.algo-btn[data-algo="bubble"]');
-  if (defaultBtn) defaultBtn.classList.add("active");
+  if (defaultBtn) {
+    defaultBtn.classList.add("active", "selected");
+    // Ensure correct initial visibility (sorting mode shown by default)
+    showForSort(defaultBtn.textContent.trim());
+  } else {
+    // Fallback: nothing selected
+    if (sortUI) sortUI.classList.add("hidden");
+    if (dsCanvas) dsCanvas.classList.add("hidden");
+    if (customArrayPanel) customArrayPanel.classList.add("hidden");
+    if (fileUploadPanel) fileUploadPanel.classList.add("hidden");
+    setStatus("Pick an item from the toolbar");
+  }
 
   // Start visualization
-  document
-    .getElementById("start-btn")
-    .addEventListener("click", startVisualization);
+  const startBtnEl = document.getElementById("start-btn");
+  if (startBtnEl) {
+    startBtnEl.addEventListener("click", startVisualization);
+  }
 });
 
 // ---------- visualization control ----------
 
 // Read the current array, send a POST to backend, and run the visualization
 async function startVisualization() {
+  // Guard: only run when a sorting algorithm is selected
+  const allowedSorts = new Set(["bubble", "insertion", "merge", "quick"]);
+  if (!selectedAlgorithm || !allowedSorts.has(selectedAlgorithm)) {
+    setStatus("Please select a sorting algorithm.");
+    return;
+  }
+
   const arr = getArrayValues();
   const startBtn = document.getElementById("start-btn");
   startBtn.disabled = true;
@@ -216,7 +269,7 @@ async function visualizeInsertion(steps) {
       el.textContent = step.value;
       el.dataset.value = step.value;
       el.style.height = step.value * 2 + "px";
-      el.style.backgroundColor = highlight;
+      el.style.backgroundColor = mergeWrite;
       await delay(animationSpeed);
       el.style.backgroundColor = normal;
     }

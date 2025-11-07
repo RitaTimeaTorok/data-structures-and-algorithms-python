@@ -203,3 +203,26 @@ p { color: var(--muted); margin: 0 0 24px; }
   font-size: 0.9rem;
   font-weight: 600;
 }
+
+/* Quick toggle helper */
+.hidden { display: none !important; }
+
+/* Grouped sorting section for styling later */
+.sort-ui { width: 100%; }
+
+/* Empty DS canvas you can style or draw on later */
+.ds-canvas {
+  width: 100%;
+  min-height: 300px;            /* matches your visual height vibe */
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  /* inherits .viz-placeholder background/border feel */
+}
+
+.ds-canvas::before {
+  content: "Data Structure canvas";
+  opacity: 0.35;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sorting Visualizer — Algorithms</title>
+    <title>Data Structures & Algorithms Visualizer</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='styles.css') }}"
@@ -11,18 +11,35 @@
   </head>
   <body>
     <header class="container">
-      <h1>Sorting Visualizer</h1>
+      <h1>Data Structures & Algorithms Visualizer</h1>
       <p>
-        Pick an algorithm from the toolbar below, then click “Start
-        Visualization”
+        Pick an algorithm or Data Structure you want to visualize from the
+        toolbar below
       </p>
     </header>
 
-    <nav class="container toolbar" aria-label="Sorting algorithms">
-      <button class="algo-btn" data-algo="bubble">Bubble Sort</button>
-      <button class="algo-btn" data-algo="insertion">Insertion Sort</button>
-      <button class="algo-btn" data-algo="merge">Merge Sort</button>
-      <button class="algo-btn" data-algo="quick">Quick Sort</button>
+    <nav
+      class="container toolbar"
+      aria-label="Sorting algorithms and data structures"
+    >
+      <!-- Add data-type="sort" for sorting, data-type="ds" for data structures -->
+      <button class="algo-btn" data-algo="bubble" data-type="sort">
+        Bubble Sort
+      </button>
+      <button class="algo-btn" data-algo="insertion" data-type="sort">
+        Insertion Sort
+      </button>
+      <button class="algo-btn" data-algo="merge" data-type="sort">
+        Merge Sort
+      </button>
+      <button class="algo-btn" data-algo="quick" data-type="sort">
+        Quick Sort
+      </button>
+      <button class="algo-btn" data-algo="linked-list" data-type="ds">
+        Linked List
+      </button>
+      <button class="algo-btn" data-algo="stack" data-type="ds">Stack</button>
+      <button class="algo-btn" data-algo="queue" data-type="ds">Queue</button>
     </nav>
 
     <main class="container viz">
@@ -32,17 +49,37 @@
         aria-label="Visualization area"
       >
         <div id="status-text" class="status-text">Ready</div>
-        <div class="array-display">
-          {% for num in array %}
-          <div class="array-element" data-value="{{ num }}">{{ num }}</div>
-          {% endfor %}
-        </div>
-        <div class="controls">
-          <button id="start-btn" class="start-btn">Start Visualization</button>
-        </div>
+
+        <!-- Sorting UI grouped for easy toggle -->
+        <section
+          id="sort-ui"
+          class="sort-ui hidden"
+          aria-label="Sorting visualization"
+        >
+          <div class="array-display" id="array-display">
+            {% for num in array %}
+            <div class="array-element" data-value="{{ num }}">{{ num }}</div>
+            {% endfor %}
+          </div>
+          <div class="controls">
+            <button id="start-btn" class="start-btn">
+              Start Visualization
+            </button>
+          </div>
+        </section>
+
+        <!-- Clean canvas for Data Structures (empty for now) -->
+        <section
+          id="ds-canvas"
+          class="ds-canvas hidden"
+          aria-label="Data structure canvas"
+        >
+          <!-- Intentionally empty. You’ll render DS here later. -->
+        </section>
       </div>
-      <!-- Custom -->
-      <div class="input-panel">
+
+      <!-- Custom input + file upload panels: only visible for sorting -->
+      <div class="input-panel hidden" id="custom-array-panel">
         <label for="array-input">Custom array (comma-separated numbers):</label>
         <div class="input-row">
           <input
@@ -54,8 +91,8 @@
         </div>
         <div id="array-error" class="error-text" aria-live="polite"></div>
       </div>
-      <!-- File upload panel -->
-      <div class="input-panel file-panel">
+
+      <div class="input-panel file-panel hidden" id="file-upload-panel">
         <label for="array-file"
           >Upload CSV/TXT (comma-separated numbers):</label
         >
