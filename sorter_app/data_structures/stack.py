@@ -1,57 +1,36 @@
-from typing import Any, Dict, List, Tuple
+from collections import deque
+from typing import Any, Deque, Dict, List, Tuple
 
-"""
-Representation:
-- Stack is represented here as a simple Python list, top is the END of the list.
-- Example: [1,2,3]  -> top is 3 (index len-1)
-"""
+
+def _as_deque(state: List[Any]) -> Deque[Any]:
+    return deque(state)
+
+
+def _to_list(dq: Deque[Any]) -> List[Any]:
+    return list(dq)
 
 
 def push_value(state: List[Any], value: Any) -> Tuple[List[Dict], List[Any]]:
+    dq = _as_deque(state)
     steps: List[Dict] = []
-    new_state = state.copy()
 
-    # Highlight top (if exists)
-    if new_state:
-        steps.append({"type": "highlight", "index": len(new_state) - 1})
+    if dq:
+        steps.append({"type": "highlight", "index": len(dq) - 1})  # current top
 
-    # Allocate a new slot (conceptual)
-    steps.append({"type": "allocate", "index": len(new_state)})
-
-    # Write the new value at top
-    new_state.append(value)
-    steps.append({"type": "write", "index": len(new_state) - 1, "value": value})
-
-    # Finalize: mark as new top
-    steps.append({"type": "top", "index": len(new_state) - 1})
-
-    return steps, new_state
+    dq.append(value)
+    steps.append({"type": "append", "value": value})
+    steps.append({"type": "top", "index": len(dq) - 1})
+    return steps, _to_list(dq)
 
 
 def pop_value(state: List[Any]) -> Tuple[List[Dict], List[Any]]:
+    dq = _as_deque(state)
     steps: List[Dict] = []
-    if not state:
-        # No-op; keep trace to show error gracefully in UI
+    if not dq:
         steps.append({"type": "noop", "reason": "empty"})
-        return steps, state.copy()
-
-    new_state = state.copy()
-
-    # Highlight current top
-    top_idx = len(new_state) - 1
-    steps.append({"type": "highlight", "index": top_idx})
-
-    # Read the value (optional for UI)
-    steps.append({"type": "read", "index": top_idx, "value": new_state[top_idx]})
-
-    # Remove top
-    removed = new_state.pop()
-    steps.append({"type": "remove", "index": top_idx, "value": removed})
-
-    # New top (if any)
-    if new_state:
-        steps.append({"type": "top", "index": len(new_state) - 1})
-    else:
-        steps.append({"type": "top", "index": None})  # stack empty
-
-    return steps, new_state
+        return steps, _to_list(dq)
+    steps.append({"type": "highlight", "index": len(dq) - 1})
+    v = dq.pop()
+    steps.append({"type": "pop", "value": v})
+    steps.append({"type": "top", "index": (len(dq) - 1) if dq else None})
+    return steps, _to_list(dq)
