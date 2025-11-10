@@ -226,3 +226,13 @@ p { color: var(--muted); margin: 0 0 24px; }
   font-weight: 600;
   letter-spacing: 0.3px;
 }
+
+/* Ensure the top of the stack is visually at the top (last child) */
+.ds-stack {
+  display: flex;
+  flex-direction: column-reverse; /* last child renders at the top */
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 16px;
+}

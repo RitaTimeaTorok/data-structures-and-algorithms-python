@@ -72,7 +72,6 @@
         <section
           id="ds-canvas"
           class="ds-canvas hidden"
-          aria-label="Data structure canvas"
           data-stack="{{ stack_init | tojson }}"
           data-queue="{{ queue_init | tojson }}"
           data-linked="{{ linked_init | tojson }}"
@@ -81,9 +80,34 @@
         </section>
       </div>
 
+      <!-- DS Controls (shown in Data Structure mode; used now for Stack) -->
+      <div
+        id="ds-controls"
+        class="input-panel ds-controls hidden"
+        aria-label="Data Structure controls"
+      >
+        <div class="input-row">
+          <input
+            id="ds-push-value"
+            type="text"
+            placeholder="value to push (e.g., 42)"
+          />
+          <button id="ds-push-btn" class="start-btn" aria-label="Push to stack">
+            Push
+          </button>
+          <button id="ds-pop-btn" class="start-btn" aria-label="Pop from stack">
+            Pop
+          </button>
+        </div>
+        <div class="helper-text">
+          Select <strong>Stack</strong> above, then use Push/Pop. (Values can be
+          numbers or text.)
+        </div>
+      </div>
+
       <!-- Custom input + file upload panels: only visible for sorting -->
       <div class="input-panel hidden" id="custom-array-panel">
-        <label for="array-input">Custom array (comma-separated numbers):</label>
+        <label for="array-input">Custom input (comma-separated numbers):</label>
         <div class="input-row">
           <input
             id="array-input"

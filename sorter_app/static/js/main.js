@@ -1,6 +1,15 @@
 let selectedAlgorithm = "bubble";
 let animationSpeed = 300; // ms
 
+// NEW: track mode + which DS is active
+let currentMode = "sort"; // "sort" | "ds"
+let currentDS = null; // "stack" | "queue" | "linked-list"
+
+// Keep local DS states (start from server-provided data-attrs)
+let stackState = [];
+let queueState = [];
+let linkedState = [];
+
 // ---------- DOM helpers ----------
 
 function getArrayElements() {
@@ -21,7 +30,7 @@ function setStatus(text) {
 // Theme colors
 const normal = "#5050a1";
 const highlight = "#91aafaff";
-const keyColor = "#a0b3ff"; // we'll use this for HEAD
+const keyColor = "#a0b3ff"; // HEAD / emphasis
 const mergeLeft = "#99baff";
 const mergeRight = "#7189ff";
 const mergeWrite = "#8db1ff";
@@ -59,9 +68,31 @@ function createDSItem(value) {
   item.style.minHeight = "36px";
   item.style.padding = "6px 10px";
   item.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)";
+  item.style.transition =
+    "transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease";
   item.textContent = String(value);
   item.dataset.value = String(value);
   return item;
+}
+
+function getStackContainer() {
+  return document.querySelector("#ds-canvas .ds-stack");
+}
+
+function getStackItems() {
+  const col = getStackContainer();
+  if (!col) return [];
+  return Array.from(col.querySelectorAll(".ds-item"));
+}
+
+function updateDSControlsVisibility() {
+  const dsControls = document.getElementById("ds-controls");
+  if (!dsControls) return;
+  if (currentMode === "ds" && currentDS === "stack") {
+    dsControls.classList.remove("hidden");
+  } else {
+    dsControls.classList.add("hidden");
+  }
 }
 
 function renderStack(values) {
@@ -72,7 +103,7 @@ function renderStack(values) {
   const col = document.createElement("div");
   col.className = "ds-stack";
   col.style.display = "flex";
-  col.style.flexDirection = "column";
+  col.style.flexDirection = "column-reverse"; // <-- was "column"
   col.style.alignItems = "center";
   col.style.justifyContent = "flex-start";
   col.style.gap = "8px";
@@ -100,7 +131,7 @@ function renderQueue(values) {
   dsCanvas.appendChild(row);
 }
 
-// ---- Linked List render (NEW) ----
+// ---- Linked List render ----
 function createDSNode(value, isHead = false) {
   const node = document.createElement("div");
   node.className = "ds-node";
@@ -121,7 +152,6 @@ function createDSNode(value, isHead = false) {
 }
 
 function createLink() {
-  // simple arrow link using text; easy to restyle later
   const link = document.createElement("div");
   link.className = "ds-link";
   link.textContent = "→";
@@ -148,12 +178,10 @@ function renderLinkedList(values) {
   row.style.padding = "16px";
   row.style.flexWrap = "wrap"; // if it overflows
 
-  // create nodes with links between them
   values.forEach((v, idx) => {
     const isHead = idx === 0;
     const node = createDSNode(v, isHead);
 
-    // optional small HEAD tag
     if (isHead) {
       const badge = document.createElement("div");
       badge.textContent = "HEAD";
@@ -164,13 +192,13 @@ function renderLinkedList(values) {
       badge.style.letterSpacing = "0.3px";
       badge.style.color = "#e6e8f0";
       badge.style.opacity = "0.9";
-      row.appendChild(badge); // attach before to keep near head
-      // place badge just before node visually
+
       const wrap = document.createElement("div");
       wrap.style.display = "flex";
       wrap.style.flexDirection = "column";
       wrap.style.alignItems = "center";
       wrap.style.marginRight = "6px";
+
       wrap.appendChild(badge);
       wrap.appendChild(node);
       row.appendChild(wrap);
@@ -186,23 +214,79 @@ function renderLinkedList(values) {
   dsCanvas.appendChild(row);
 }
 
-function renderLinkedListPlaceholder() {
-  const dsCanvas = document.getElementById("ds-canvas");
-  if (!dsCanvas) return;
-  clearDSCanvas();
+// -------- Stack step visualization ----------
+// Steps we handle: highlight {index}, append {value}, pop {value}, top {index}, noop {reason}
+async function visualizeStackSteps(steps, finalState) {
+  // ensure we have a stack container in the canvas
+  if (!getStackContainer()) renderStack(stackState);
 
-  const note = document.createElement("div");
-  note.style.opacity = "0.6";
-  note.style.fontWeight = "600";
-  note.style.letterSpacing = "0.3px";
-  note.textContent = "Linked List canvas (coming soon)";
-  dsCanvas.appendChild(note);
+  for (const step of steps) {
+    if (step.type === "highlight" && typeof step.index === "number") {
+      const items = getStackItems();
+      const node = items[step.index];
+      if (node) {
+        node.style.backgroundColor = highlight;
+        await delay(animationSpeed * 0.8);
+        node.style.backgroundColor = normal;
+      }
+    }
+
+    if (step.type === "append") {
+      // create an item, drop it in with a small 'pop' animation
+      const col = getStackContainer();
+      if (!col) continue;
+      const el = createDSItem(step.value);
+      el.style.transform = "translateY(-12px)";
+      el.style.opacity = "0.0";
+      col.appendChild(el);
+      await delay(20);
+      el.style.opacity = "1.0";
+      el.style.transform = "translateY(0)";
+      el.style.backgroundColor = mergeWrite;
+      await delay(animationSpeed * 0.8);
+      el.style.backgroundColor = normal;
+    }
+
+    if (step.type === "pop") {
+      // fade out the last child (top)
+      const items = getStackItems();
+      const top = items[items.length - 1];
+      if (top) {
+        top.style.backgroundColor = highlight;
+        await delay(animationSpeed * 0.6);
+        top.style.opacity = "0.0";
+        top.style.transform = "translateY(-10px)";
+        await delay(animationSpeed * 0.6);
+        top.remove();
+      }
+    }
+
+    if (step.type === "top") {
+      // optional: pulse the new top
+      const items = getStackItems();
+      const idx = step.index;
+      if (typeof idx === "number" && items[idx]) {
+        const topEl = items[idx];
+        topEl.style.boxShadow = "0 0 0 2px rgba(160,179,255,0.6) inset";
+        await delay(animationSpeed * 0.8);
+        topEl.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)";
+      }
+    }
+
+    if (step.type === "noop") {
+      setStatus("Stack is empty — nothing to pop.");
+      await delay(animationSpeed * 0.8);
+    }
+  }
+
+  // snap to final state to avoid drift
+  renderStack(finalState);
 }
 
 // -------- setup ----------
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Set initial bar heights from data-value
+  // Set initial bar heights from data-value (sorting area)
   getArrayElements().forEach((el) => {
     const val = parseInt(el.dataset.value, 10);
     el.style.height = val * 2 + "px";
@@ -214,12 +298,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const customArrayPanel = document.getElementById("custom-array-panel");
   const fileUploadPanel = document.getElementById("file-upload-panel");
 
+  // NEW: DS controls (push/pop/value)
+  const dsControls = document.getElementById("ds-controls");
+  const dsPushBtn = document.getElementById("ds-push-btn");
+  const dsPopBtn = document.getElementById("ds-pop-btn");
+  const dsValueInput = document.getElementById("ds-push-value");
+
   // Pre-read initial DS data from server
-  const initialStack = parseInitData(dsCanvas?.dataset.stack);
-  const initialQueue = parseInitData(dsCanvas?.dataset.queue);
-  const initialLinked = parseInitData(dsCanvas?.dataset.linked); // NEW
+  stackState = parseInitData(dsCanvas?.dataset.stack);
+  queueState = parseInitData(dsCanvas?.dataset.queue);
+  linkedState = parseInitData(dsCanvas?.dataset.linked);
 
   function showForSort(name) {
+    currentMode = "sort";
+    currentDS = null;
     if (sortUI) sortUI.classList.remove("hidden");
     if (customArrayPanel) customArrayPanel.classList.remove("hidden");
     if (fileUploadPanel) fileUploadPanel.classList.remove("hidden");
@@ -227,14 +319,17 @@ document.addEventListener("DOMContentLoaded", () => {
       dsCanvas.classList.add("hidden");
       clearDSCanvas();
     }
+    if (dsControls) dsControls.classList.add("hidden");
     setStatus(`Sorting mode: ${name}`);
   }
 
   function showForDS(name) {
+    currentMode = "ds";
     if (sortUI) sortUI.classList.add("hidden");
-    if (customArrayPanel) customArrayPanel.classList.add("hidden");
-    if (fileUploadPanel) fileUploadPanel.classList.add("hidden");
+    if (customArrayPanel) customArrayPanel.classList.remove("hidden");
+    if (fileUploadPanel) fileUploadPanel.classList.remove("hidden");
     if (dsCanvas) dsCanvas.classList.remove("hidden");
+    if (dsControls) dsControls.classList.remove("hidden"); // show controls in DS
     setStatus(`Data Structure mode: ${name}`);
   }
 
@@ -253,16 +348,17 @@ document.addEventListener("DOMContentLoaded", () => {
         showForSort(btn.textContent.trim());
       } else {
         selectedAlgorithm = null;
+        currentDS = algo;
         showForDS(btn.textContent.trim());
 
         if (algo === "stack") {
-          renderStack(initialStack);
+          renderStack(stackState);
           setStatus("Stack: initial values from server.");
         } else if (algo === "queue") {
-          renderQueue(initialQueue);
+          renderQueue(queueState);
           setStatus("Queue: initial values from server.");
         } else if (algo === "linked-list") {
-          renderLinkedList(initialLinked); // NEW
+          renderLinkedList(linkedState);
           setStatus(
             "Linked List: initial values from server (head highlighted)."
           );
@@ -283,17 +379,76 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dsCanvas) dsCanvas.classList.add("hidden");
     if (customArrayPanel) customArrayPanel.classList.add("hidden");
     if (fileUploadPanel) fileUploadPanel.classList.add("hidden");
+    if (dsControls) dsControls.classList.add("hidden");
     setStatus("Pick an item from the toolbar");
   }
 
-  // Start visualization
+  // Start visualization (sorting)
   const startBtnEl = document.getElementById("start-btn");
-  if (startBtnEl) {
-    startBtnEl.addEventListener("click", startVisualization);
+  if (startBtnEl) startBtnEl.addEventListener("click", startVisualization);
+
+  // -------- DS Controls: Stack push/pop --------
+  if (dsPushBtn) {
+    dsPushBtn.addEventListener("click", async () => {
+      if (currentMode !== "ds" || currentDS !== "stack") {
+        setStatus("Switch to Stack to use Push.");
+        return;
+      }
+      const raw = (dsValueInput?.value ?? "").trim();
+      if (!raw.length) {
+        setStatus("Enter a value to push.");
+        return;
+      }
+      // accept numbers or text; if numeric, coerce to Number
+      const value = Number.isFinite(Number(raw)) ? Number(raw) : raw;
+
+      try {
+        setStatus("Pushing on stack...");
+        const res = await fetch("/ds/stack", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state: stackState, action: "push", value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Push failed");
+        await visualizeStackSteps(data.steps, data.new_state);
+        stackState = data.new_state; // sync local
+        setStatus("Push complete.");
+        if (dsValueInput) dsValueInput.value = "";
+      } catch (err) {
+        setStatus("Error: " + err.message);
+        console.error(err);
+      }
+    });
+  }
+
+  if (dsPopBtn) {
+    dsPopBtn.addEventListener("click", async () => {
+      if (currentMode !== "ds" || currentDS !== "stack") {
+        setStatus("Switch to Stack to use Pop.");
+        return;
+      }
+      try {
+        setStatus("Popping from stack...");
+        const res = await fetch("/ds/stack", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state: stackState, action: "pop" }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Pop failed");
+        await visualizeStackSteps(data.steps, data.new_state);
+        stackState = data.new_state; // sync
+        setStatus("Pop complete.");
+      } catch (err) {
+        setStatus("Error: " + err.message);
+        console.error(err);
+      }
+    });
   }
 });
 
-// ---------- visualization control ----------
+// ---------- visualization control (sorting) ----------
 
 async function startVisualization() {
   const allowedSorts = new Set(["bubble", "insertion", "merge", "quick"]);
@@ -338,7 +493,7 @@ async function startVisualization() {
   }
 }
 
-// ---------- Bubble Sort ----------
+// ---------- Sorting visualizers (unchanged) ----------
 
 async function visualizeBubble(steps) {
   const elements = getArrayElements();
@@ -351,10 +506,9 @@ async function visualizeBubble(steps) {
     setStatus(
       `Step ${stepNum++}/${total}: Comparing index ${i} (${
         elements[i].textContent
-      }) ` +
-        `and ${j} (${elements[j].textContent})${
-          swap ? " → swapping" : " → no swap"
-        }`
+      }) and ${j} (${elements[j].textContent})${
+        swap ? " → swapping" : " → no swap"
+      }`
     );
 
     const el1 = elements[i];
@@ -388,8 +542,6 @@ async function visualizeBubble(steps) {
   await delay(400);
   for (const el of elements) el.style.backgroundColor = normal;
 }
-
-// ---------- Insertion Sort ----------
 
 async function visualizeInsertion(steps) {
   const elements = getArrayElements();
@@ -461,8 +613,6 @@ async function visualizeInsertion(steps) {
   for (const el of elements) el.style.backgroundColor = normal;
 }
 
-// ---------- Merge Sort ----------
-
 async function visualizeMerge(steps) {
   const elements = getArrayElements();
   setStatus("Starting Merge Sort...");
@@ -517,8 +667,6 @@ async function visualizeMerge(steps) {
   await delay(400);
   for (const el of elements) el.style.backgroundColor = normal;
 }
-
-// ---------- Quick Sort ----------
 
 async function visualizeQuick(steps) {
   const elements = getArrayElements();
@@ -591,6 +739,7 @@ async function visualizeQuick(steps) {
 
 // ---------- Custom Array Input & File Upload ----------
 
+// Parse and validate comma-separated input into a number array
 function parseArrayInput(text) {
   if (typeof text !== "string")
     return { ok: false, error: "Input must be text." };
@@ -613,6 +762,7 @@ function parseArrayInput(text) {
   return { ok: true, value: nums };
 }
 
+// Replace the bar elements with a new array of values (sorting UI)
 function renderArray(values) {
   const display = document.querySelector(".array-display");
   if (!display) return;
@@ -633,6 +783,7 @@ function renderArray(values) {
   setStatus("Array updated. Pick an algorithm and press Start Visualization.");
 }
 
+// ---- Manual input handler ----
 const applyBtn = document.getElementById("apply-array");
 const inputEl = document.getElementById("array-input");
 const errorEl = document.getElementById("array-error");
@@ -648,7 +799,23 @@ if (applyBtn && inputEl && errorEl) {
     }
 
     errorEl.textContent = "";
-    renderArray(value);
+
+    // branch by mode
+    if (currentMode === "sort") {
+      renderArray(value);
+    } else if (currentMode === "ds") {
+      if (currentDS === "stack") {
+        stackState = value.slice();
+        renderStack(stackState);
+      } else if (currentDS === "queue") {
+        queueState = value.slice();
+        renderQueue(queueState);
+      } else if (currentDS === "linked-list") {
+        linkedState = value.slice();
+        renderLinkedList(linkedState);
+      }
+      setStatus(`Updated ${currentDS || "data structure"} from input.`);
+    }
   });
 
   inputEl.addEventListener("keydown", (e) => {
@@ -659,7 +826,6 @@ if (applyBtn && inputEl && errorEl) {
 }
 
 // ---- File upload handler ----
-
 const uploadBtn = document.getElementById("upload-array");
 const fileInput = document.getElementById("array-file");
 const fileError = document.getElementById("file-error");
@@ -683,7 +849,23 @@ if (uploadBtn && fileInput && fileError) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed.");
 
-      renderArray(data.array);
+      const values = data.array || [];
+
+      if (currentMode === "sort") {
+        renderArray(values);
+      } else if (currentMode === "ds") {
+        if (currentDS === "stack") {
+          stackState = values.slice();
+          renderStack(stackState);
+        } else if (currentDS === "queue") {
+          queueState = values.slice();
+          renderQueue(queueState);
+        } else if (currentDS === "linked-list") {
+          linkedState = values.slice();
+          renderLinkedList(linkedState);
+        }
+      }
+
       setStatus(data.message || "File uploaded successfully!");
       fileError.style.color = "#8fff8f";
       fileError.textContent = data.message || "Upload successful!";
