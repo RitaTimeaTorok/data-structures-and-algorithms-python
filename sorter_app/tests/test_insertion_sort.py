@@ -17,13 +17,12 @@ def apply_insertion_trace(
       - {"type": "insert", "index": int, "value": Any}       # place key at index
     """
     arr = list(original)
-    for s in steps:
-        t = s.get("type")
-        if t == "shift":
-            arr[s["to"]] = arr[s["from"]]
-        elif t == "insert":
-            arr[s["index"]] = s["value"]
-        # "key" and "compare" are no-ops for replay
+    for step in steps:
+        step_type = step.get("type")
+        if step_type == "shift":
+            arr[step["to"]] = arr[step["from"]]
+        elif step_type == "insert":
+            arr[step["index"]] = step["value"]
     return arr
 
 

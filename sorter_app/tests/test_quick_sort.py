@@ -1,5 +1,5 @@
 from typing import List, Union
-import pytest  # type:ignore
+import pytest  # type: ignore
 import copy
 from algorithms.quick_sort import quick_sort
 
@@ -18,7 +18,6 @@ def apply_quick_trace(
         if step["type"] == "swap":
             i, j = step["i"], step["j"]
             arr[i], arr[j] = arr[j], arr[i]
-        # 'pivot', 'compare', 'done' are visual markers
     return arr
 
 

@@ -18,7 +18,6 @@ def apply_merge_trace(
     for step in steps:
         if step["type"] == "overwrite":
             arr[step["index"]] = step["value"]
-        # 'compare' and 'split' steps are visual only, no data change
     return arr
 
 
