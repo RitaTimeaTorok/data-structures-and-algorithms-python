@@ -80,7 +80,7 @@
         </section>
       </div>
 
-      <!-- DS Controls (shown in Data Structure mode; used now for Stack) -->
+      <!-- STACK Controls (shown only when Stack is selected) -->
       <div
         id="ds-controls"
         class="input-panel ds-controls hidden"
@@ -102,6 +102,29 @@
         <div class="helper-text">
           Select <strong>Stack</strong> above, then use Push/Pop. (Values can be
           numbers or text.)
+        </div>
+      </div>
+      <!-- QUEUE Controls (shown only when Queue is selected) -->
+      <div
+        id="queue-controls"
+        class="input-panel ds-controls hidden"
+        aria-label="Queue controls"
+      >
+        <div class="input-row">
+          <input
+            id="queue-enqueue-value"
+            type="text"
+            placeholder="value to enqueue (e.g., 7)"
+          />
+          <button id="queue-enqueue-btn" class="start-btn" aria-label="Enqueue">
+            Enqueue
+          </button>
+          <button id="queue-dequeue-btn" class="start-btn" aria-label="Dequeue">
+            Dequeue
+          </button>
+        </div>
+        <div class="helper-text">
+          Select <strong>Queue</strong> above, then use Enqueue/Dequeue.
         </div>
       </div>
 
@@ -131,6 +154,8 @@
       </div>
     </main>
 
+    <script src="{{ url_for('static', filename='js/ds.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sort.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   </body>
 </html>

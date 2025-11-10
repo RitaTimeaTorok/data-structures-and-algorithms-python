@@ -1,3 +1,18 @@
+/* Data Structure Item Styling */
+.ds-item {
+  background: #5050a1;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 36px;
+  padding: 6px 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+}
 /* Selected algorithm button styling */
 .algo-btn.selected {
   background: linear-gradient(180deg, var(--accent), #1976d2);
@@ -235,4 +250,29 @@ p { color: var(--muted); margin: 0 0 24px; }
   justify-content: flex-start;
   gap: 8px;
   padding: 16px;
+}
+
+/* Queue row layout */
+.ds-queue {
+  display: flex;
+  flex-direction: row;   /* left = front, right = rear */
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+}
+
+/* Queue input consistent with your theme */
+#queue-enqueue-value {
+  flex: 1 1 auto;
+  padding: 10px 12px;
+  border-radius: calc(var(--radius) - 8px);
+  border: 1px solid rgba(255,255,255,0.12);
+  background: #0f1530;
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+}
+#queue-enqueue-value:focus {
+  box-shadow: 0 0 0 2px rgba(77,163,255,0.25) inset;
 }
