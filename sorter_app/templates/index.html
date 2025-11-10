@@ -80,7 +80,7 @@
         </section>
       </div>
 
-      <!-- STACK Controls (shown only when Stack is selected) -->
+      <!-- STACK Controls -->
       <div
         id="ds-controls"
         class="input-panel ds-controls hidden"
@@ -99,12 +99,8 @@
             Pop
           </button>
         </div>
-        <div class="helper-text">
-          Select <strong>Stack</strong> above, then use Push/Pop. (Values can be
-          numbers or text.)
-        </div>
       </div>
-      <!-- QUEUE Controls (shown only when Queue is selected) -->
+      <!-- QUEUE Controls -->
       <div
         id="queue-controls"
         class="input-panel ds-controls hidden"
@@ -123,8 +119,39 @@
             Dequeue
           </button>
         </div>
-        <div class="helper-text">
-          Select <strong>Queue</strong> above, then use Enqueue/Dequeue.
+      </div>
+      <!-- LINKED LIST Controls -->
+      <div
+        id="linked-controls"
+        class="input-panel ds-controls hidden"
+        aria-label="Linked List controls"
+      >
+        <div class="input-row" style="flex-wrap: wrap">
+          <input
+            id="ll-index"
+            type="number"
+            min="0"
+            placeholder="index (e.g., 0)"
+          />
+          <input
+            id="ll-value"
+            type="text"
+            placeholder="value to insert (e.g., 42)"
+          />
+          <button
+            id="ll-insert-btn"
+            class="start-btn"
+            aria-label="Insert at index"
+          >
+            Insert
+          </button>
+          <button
+            id="ll-delete-btn"
+            class="start-btn"
+            aria-label="Delete at index"
+          >
+            Delete
+          </button>
         </div>
       </div>
 

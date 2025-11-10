@@ -115,298 +115,6 @@ function createDSItem(value) {
 }
 
 // ==============================
-// DS: STACK RENDER & HELPERS
-// ==============================
-
-function getStackContainer() {
-  return document.querySelector("#ds-canvas .ds-stack");
-}
-function getStackItems() {
-  const col = getStackContainer();
-  if (!col) return [];
-  return Array.from(col.querySelectorAll(".ds-item"));
-}
-
-function renderStack(values) {
-  const dsCanvas = document.getElementById("ds-canvas");
-  if (!dsCanvas) return;
-  clearDSCanvas();
-
-  const col = document.createElement("div");
-  col.className = "ds-stack";
-  col.style.display = "flex";
-  col.style.flexDirection = "column-reverse"; // top at the visual top
-  col.style.alignItems = "center";
-  col.style.justifyContent = "flex-start";
-  col.style.gap = "8px";
-  col.style.padding = "16px";
-
-  values.forEach((v) => col.appendChild(createDSItem(v)));
-  dsCanvas.appendChild(col);
-}
-
-// ==============================
-// DS: QUEUE RENDER & HELPERS
-// ==============================
-
-function getQueueContainer() {
-  return document.querySelector("#ds-canvas .ds-queue");
-}
-function getQueueItems() {
-  const row = getQueueContainer();
-  if (!row) return [];
-  return Array.from(row.querySelectorAll(".ds-item"));
-}
-
-function renderQueue(values) {
-  const dsCanvas = document.getElementById("ds-canvas");
-  if (!dsCanvas) return;
-  clearDSCanvas();
-
-  const row = document.createElement("div");
-  row.className = "ds-queue";
-  row.style.display = "flex";
-  row.style.flexDirection = "row"; // left = front, right = rear
-  row.style.alignItems = "center";
-  row.style.justifyContent = "center";
-  row.style.gap = "8px";
-  row.style.padding = "16px";
-
-  values.forEach((v) => row.appendChild(createDSItem(v)));
-  dsCanvas.appendChild(row);
-}
-
-// ==============================
-// DS: LINKED LIST RENDER
-// ==============================
-
-function createDSNode(value, isHead = false) {
-  const node = document.createElement("div");
-  node.className = "ds-node";
-  node.style.background = isHead ? keyColor : normal;
-  node.style.color = "#fff";
-  node.style.fontWeight = "700";
-  node.style.borderRadius = "10px";
-  node.style.display = "flex";
-  node.style.alignItems = "center";
-  node.style.justifyContent = "center";
-  node.style.minWidth = "56px";
-  node.style.minHeight = "42px";
-  node.style.padding = "6px 12px";
-  node.style.boxShadow = "0 2px 10px rgba(0,0,0,0.35)";
-  node.style.position = "relative";
-  node.textContent = String(value);
-  return node;
-}
-
-function createLink() {
-  const link = document.createElement("div");
-  link.className = "ds-link";
-  link.textContent = "→";
-  link.style.opacity = "0.7";
-  link.style.fontWeight = "800";
-  link.style.fontSize = "20px";
-  link.style.margin = "0 6px";
-  link.style.userSelect = "none";
-  return link;
-}
-
-function renderLinkedList(values) {
-  const dsCanvas = document.getElementById("ds-canvas");
-  if (!dsCanvas) return;
-  clearDSCanvas();
-
-  const row = document.createElement("div");
-  row.className = "ds-linked-list";
-  row.style.display = "flex";
-  row.style.flexDirection = "row";
-  row.style.alignItems = "center";
-  row.style.justifyContent = "center";
-  row.style.gap = "6px";
-  row.style.padding = "16px";
-  row.style.flexWrap = "wrap";
-
-  values.forEach((v, idx) => {
-    const isHead = idx === 0;
-    const node = createDSNode(v, isHead);
-
-    if (isHead) {
-      const badge = document.createElement("div");
-      badge.textContent = "HEAD";
-      badge.style.position = "absolute";
-      badge.style.top = "-18px";
-      badge.style.fontSize = "10px";
-      badge.style.fontWeight = "800";
-      badge.style.letterSpacing = "0.3px";
-      badge.style.color = "#e6e8f0";
-      badge.style.opacity = "0.9";
-
-      const wrap = document.createElement("div");
-      wrap.style.display = "flex";
-      wrap.style.flexDirection = "column";
-      wrap.style.alignItems = "center";
-      wrap.style.marginRight = "6px";
-
-      wrap.appendChild(badge);
-      wrap.appendChild(node);
-      row.appendChild(wrap);
-    } else {
-      row.appendChild(node);
-    }
-
-    if (idx < values.length - 1) row.appendChild(createLink());
-  });
-
-  dsCanvas.appendChild(row);
-}
-
-// ==============================
-// DS: STACK ANIMATION (steps from backend)
-// ==============================
-
-async function visualizeStackSteps(steps, finalState) {
-  if (!getStackContainer()) renderStack(stackState);
-
-  for (const step of steps) {
-    if (step.type === "highlight" && typeof step.index === "number") {
-      const items = getStackItems();
-      const node = items[step.index];
-      if (node) {
-        node.style.backgroundColor = highlight;
-        await delay(animationSpeed * 0.8);
-        node.style.backgroundColor = normal;
-      }
-    }
-
-    if (step.type === "append") {
-      const col = getStackContainer();
-      if (!col) continue;
-      const el = createDSItem(step.value);
-      el.style.transform = "translateY(-12px)";
-      el.style.opacity = "0.0";
-      col.appendChild(el);
-      await delay(20);
-      el.style.opacity = "1.0";
-      el.style.transform = "translateY(0)";
-      el.style.backgroundColor = mergeWrite;
-      await delay(animationSpeed * 0.8);
-      el.style.backgroundColor = normal;
-    }
-
-    if (step.type === "pop") {
-      const items = getStackItems();
-      const top = items[items.length - 1];
-      if (top) {
-        top.style.backgroundColor = highlight;
-        await delay(animationSpeed * 0.6);
-        top.style.opacity = "0.0";
-        top.style.transform = "translateY(-10px)";
-        await delay(animationSpeed * 0.6);
-        top.remove();
-      }
-    }
-
-    if (step.type === "top") {
-      const items = getStackItems();
-      const idx = step.index;
-      if (typeof idx === "number" && items[idx]) {
-        const topEl = items[idx];
-        topEl.style.boxShadow = "0 0 0 2px rgba(160,179,255,0.6) inset";
-        await delay(animationSpeed * 0.8);
-        topEl.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)";
-      }
-    }
-
-    if (step.type === "noop") {
-      setStatus("Stack is empty — nothing to pop.");
-      await delay(animationSpeed * 0.8);
-    }
-  }
-
-  renderStack(finalState);
-}
-
-// ==============================
-// DS: QUEUE ANIMATION (steps from backend)
-// ==============================
-
-async function visualizeQueueSteps(steps, finalState) {
-  if (!getQueueContainer()) renderQueue(queueState);
-
-  for (const step of steps) {
-    if (step.type === "front") {
-      const items = getQueueItems();
-      const idx = step.index;
-      if (typeof idx === "number" && items[idx]) {
-        const el = items[idx];
-        el.style.boxShadow = "0 0 0 2px rgba(160,179,255,0.6) inset";
-        await delay(animationSpeed * 0.6);
-        el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)";
-      }
-      await delay(30);
-    }
-
-    if (step.type === "rear") {
-      const items = getQueueItems();
-      const idx = step.index;
-      if (typeof idx === "number" && items[idx]) {
-        const el = items[idx];
-        el.style.boxShadow = "0 0 0 2px rgba(141,177,255,0.6) inset";
-        await delay(animationSpeed * 0.6);
-        el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)";
-      }
-      await delay(30);
-    }
-
-    if (step.type === "highlight") {
-      const items = getQueueItems();
-      const idx = step.index;
-      if (typeof idx === "number" && items[idx]) {
-        const el = items[idx];
-        el.style.backgroundColor = highlight;
-        await delay(animationSpeed * 0.7);
-        el.style.backgroundColor = normal;
-      }
-    }
-
-    if (step.type === "append") {
-      const row = getQueueContainer();
-      if (!row) continue;
-      const el = createDSItem(step.value);
-      el.style.transform = "translateY(-10px)";
-      el.style.opacity = "0.0";
-      row.appendChild(el);
-      await delay(20);
-      el.style.opacity = "1.0";
-      el.style.transform = "translateY(0)";
-      el.style.backgroundColor = mergeWrite;
-      await delay(animationSpeed * 0.7);
-      el.style.backgroundColor = normal;
-    }
-
-    if (step.type === "popleft") {
-      const items = getQueueItems();
-      const first = items[0];
-      if (first) {
-        first.style.backgroundColor = highlight;
-        await delay(animationSpeed * 0.5);
-        first.style.opacity = "0.0";
-        first.style.transform = "translateY(-10px)";
-        await delay(animationSpeed * 0.5);
-        first.remove();
-      }
-    }
-
-    if (step.type === "noop") {
-      setStatus("Queue is empty — nothing to dequeue.");
-      await delay(animationSpeed * 0.7);
-    }
-  }
-
-  renderQueue(finalState);
-}
-
-// ==============================
 // PAGE BOOTSTRAP & EVENT WIRING
 // ==============================
 
@@ -432,6 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const qDeqBtn = document.getElementById("queue-dequeue-btn");
   const qValueInput = document.getElementById("queue-enqueue-value");
 
+  const linkedControls = document.getElementById("linked-controls");
+  const llInsertBtn = document.getElementById("ll-insert-btn");
+  const llDeleteBtn = document.getElementById("ll-delete-btn");
+  const llIndexInput = document.getElementById("ll-index");
+  const llValueInput = document.getElementById("ll-value");
+
   // initial DS state from data-attrs
   stackState = parseInitData(dsCanvas?.dataset.stack);
   queueState = parseInitData(dsCanvas?.dataset.queue);
@@ -444,14 +158,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sortUI) sortUI.classList.remove("hidden");
     if (customArrayPanel) customArrayPanel.classList.remove("hidden");
     if (fileUploadPanel) fileUploadPanel.classList.remove("hidden");
-
     if (dsCanvas) {
       dsCanvas.classList.add("hidden");
       clearDSCanvas();
     }
 
-    if (dsControls) dsControls.classList.add("hidden");
-    if (queueControls) queueControls.classList.add("hidden");
+    if (dsControls) dsControls.classList.add("hidden"); // stack
+    if (queueControls) queueControls.classList.add("hidden"); // queue
+    if (linkedControls) linkedControls.classList.add("hidden"); // linked
 
     setStatus(`Sorting mode: ${name}`);
   }
@@ -464,14 +178,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fileUploadPanel) fileUploadPanel.classList.remove("hidden");
     if (dsCanvas) dsCanvas.classList.remove("hidden");
 
-    if (dsControls) {
-      if (currentDS === "stack") dsControls.classList.remove("hidden");
-      else dsControls.classList.add("hidden");
-    }
-    if (queueControls) {
-      if (currentDS === "queue") queueControls.classList.remove("hidden");
-      else queueControls.classList.add("hidden");
-    }
+    if (dsControls)
+      dsControls.classList.toggle("hidden", currentDS !== "stack");
+    if (queueControls)
+      queueControls.classList.toggle("hidden", currentDS !== "queue");
+    if (linkedControls)
+      linkedControls.classList.toggle("hidden", currentDS !== "linked-list");
 
     setStatus(`Data Structure mode: ${name}`);
   }
@@ -644,6 +356,89 @@ document.addEventListener("DOMContentLoaded", () => {
         await visualizeQueueSteps(data.steps, data.new_state);
         queueState = data.new_state.slice();
         setStatus("Dequeue complete.");
+      } catch (err) {
+        setStatus("Error: " + err.message);
+        console.error(err);
+      }
+    });
+  }
+
+  if (linkedControls) {
+    if (currentDS === "linked-list") linkedControls.classList.remove("hidden");
+    else linkedControls.classList.add("hidden");
+  }
+
+  // linked list: insert_at
+  if (llInsertBtn) {
+    llInsertBtn.addEventListener("click", async () => {
+      if (currentMode !== "ds" || currentDS !== "linked-list") {
+        setStatus("Switch to Linked List to use Insert.");
+        return;
+      }
+      const idxRaw = (llIndexInput?.value ?? "").trim();
+      const valRaw = (llValueInput?.value ?? "").trim();
+      if (!idxRaw.length || !valRaw.length) {
+        setStatus("Provide both index and value.");
+        return;
+      }
+      const index = Number.isFinite(Number(idxRaw)) ? Number(idxRaw) : 0;
+      const value = Number.isFinite(Number(valRaw)) ? Number(valRaw) : valRaw;
+
+      try {
+        setStatus("Inserting into linked list...");
+        const res = await fetch("/ds/linked-list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            state: linkedState,
+            action: "insert_at",
+            index,
+            value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Insert failed");
+        await visualizeLinkedSteps(data.steps, data.new_state);
+        linkedState = data.new_state.slice();
+        setStatus("Insert complete.");
+        if (llValueInput) llValueInput.value = "";
+      } catch (err) {
+        setStatus("Error: " + err.message);
+        console.error(err);
+      }
+    });
+  }
+
+  // linked list: delete_at
+  if (llDeleteBtn) {
+    llDeleteBtn.addEventListener("click", async () => {
+      if (currentMode !== "ds" || currentDS !== "linked-list") {
+        setStatus("Switch to Linked List to use Delete.");
+        return;
+      }
+      const idxRaw = (llIndexInput?.value ?? "").trim();
+      if (!idxRaw.length) {
+        setStatus("Provide an index to delete.");
+        return;
+      }
+      const index = Number.isFinite(Number(idxRaw)) ? Number(idxRaw) : 0;
+
+      try {
+        setStatus("Deleting from linked list...");
+        const res = await fetch("/ds/linked-list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            state: linkedState,
+            action: "delete_at",
+            index,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Delete failed");
+        await visualizeLinkedSteps(data.steps, data.new_state);
+        linkedState = data.new_state.slice();
+        setStatus("Delete complete.");
       } catch (err) {
         setStatus("Error: " + err.message);
         console.error(err);

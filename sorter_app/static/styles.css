@@ -276,3 +276,20 @@ p { color: var(--muted); margin: 0 0 24px; }
 #queue-enqueue-value:focus {
   box-shadow: 0 0 0 2px rgba(77,163,255,0.25) inset;
 }
+
+.ds-node-wrap { position: relative; }
+.ds-head-badge { user-select: none; }
+
+#linked-controls input[type="number"],
+#linked-controls input[type="text"] {
+  flex: 1 1 180px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: #0f1530;
+  color: #e6e8f0;
+  outline: none;
+}
+#linked-controls input:focus {
+  box-shadow: 0 0 0 2px rgba(77,163,255,0.25) inset;
+}
