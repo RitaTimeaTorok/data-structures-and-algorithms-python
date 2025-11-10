@@ -17,7 +17,7 @@ def quick_sort(array: List[Union[int, float]]):
 
     # sort the subarray between the given indices
     def _quick_sort(left, right):
-        if left > right:
+        if left >= right:
             return
         pivot_index = randint(left, right)
         pivot_value = array_copy[pivot_index]
