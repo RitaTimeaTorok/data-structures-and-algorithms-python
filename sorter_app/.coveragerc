@@ -1,0 +1,31 @@
+[run]
+branch = True
+source =
+    algorithms
+    data_structures
+# if you use multiprocessing / subprocess:
+# concurrency = multiprocessing,thread
+# parallel = True
+
+[report]
+show_missing = True
+skip_empty = True
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    if __name__ == .__main__.:
+    raise NotImplementedError
+
+# Don’t count tests or virtual env
+omit =
+    tests/*
+    .venv/*
+    */__init__.py  # (optional)
+
+[html]
+directory = htmlcov
+
+[paths]
+source =
+    algorithms
+    data_structures
