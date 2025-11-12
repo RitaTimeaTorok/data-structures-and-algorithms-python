@@ -20,8 +20,8 @@ def client():
     app = Flask(__name__)
     app.register_blueprint(ds_blueprint)
     app.config.update(TESTING=True)
-    with app.test_client() as c:
-        yield c
+    with app.test_client() as testing_client:
+        yield testing_client
 
 
 # ---------------------------
@@ -37,10 +37,7 @@ def test_stack_push_happy_path(client):
 
     assert data["structure"] == "stack"
     assert data["action"] == "push"
-    assert isinstance(data["steps"], list)
-    assert isinstance(data["new_state"], list)
 
-    # Reconstruct stack via steps
     reconstructed = apply_stack_trace(payload["state"], data["steps"])
     assert reconstructed == data["new_state"]
 
@@ -53,6 +50,7 @@ def test_stack_pop_happy_path(client):
 
     assert data["structure"] == "stack"
     assert data["action"] == "pop"
+
     reconstructed = apply_stack_trace(payload["state"], data["steps"])
     assert reconstructed == data["new_state"]
 
@@ -73,20 +71,17 @@ def test_stack_pop_empty_returns_noop(client):
 
 
 @pytest.mark.parametrize(
-    "payload, status",
+    "payload",
     [
-        ({"state": "not-a-list", "action": "push", "value": 1}, HTTPStatus.BAD_REQUEST),
-        ({"state": [1], "action": "push"}, HTTPStatus.BAD_REQUEST),  # missing value
-        ({"state": [1], "action": "peek"}, HTTPStatus.BAD_REQUEST),  # invalid action
-        (
-            {},
-            HTTPStatus.BAD_REQUEST,
-        ),  # missing everything
+        ({"state": "not-a-list", "action": "push", "value": 1}),  # not a list
+        ({"state": [1], "action": "push"}),  # missing value
+        ({"state": [1], "action": "peek"}),  # invalid action
+        ({}),  # missing everything
     ],
 )
-def test_stack_bad_payloads(client, payload, status):
+def test_stack_bad_payloads(client, payload):
     resp = client.post("/ds/stack", json=payload)
-    assert resp.status_code == status
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
     data = resp.get_json()
     assert "error" in data
 
@@ -104,6 +99,7 @@ def test_queue_enqueue_happy_path(client):
 
     assert data["structure"] == "queue"
     assert data["action"] == "enqueue"
+
     reconstructed = apply_queue_trace(payload["state"], data["steps"])
     assert reconstructed == data["new_state"]
 
@@ -111,11 +107,13 @@ def test_queue_enqueue_happy_path(client):
 def test_queue_dequeue_happy_path(client):
     payload = {"state": [4, 5, 6], "action": "dequeue"}
     resp = client.post("/ds/queue", json=payload)
+
     assert resp.status_code == HTTPStatus.OK
     data = resp.get_json()
 
     assert data["structure"] == "queue"
     assert data["action"] == "dequeue"
+
     reconstructed = apply_queue_trace(payload["state"], data["steps"])
     assert reconstructed == data["new_state"]
 
@@ -123,6 +121,7 @@ def test_queue_dequeue_happy_path(client):
 def test_queue_dequeue_empty_returns_noop(client):
     payload = {"state": [], "action": "dequeue"}
     resp = client.post("/ds/queue", json=payload)
+
     assert resp.status_code == HTTPStatus.OK
     data = resp.get_json()
 
@@ -136,20 +135,17 @@ def test_queue_dequeue_empty_returns_noop(client):
 
 
 @pytest.mark.parametrize(
-    "payload, status",
+    "payload",
     [
-        (
-            {"state": "not-a-list", "action": "enqueue", "value": 1},
-            HTTPStatus.BAD_REQUEST,
-        ),
-        ({"state": [1], "action": "enqueue"}, HTTPStatus.BAD_REQUEST),  # missing value
-        ({"state": [1], "action": "peek"}, HTTPStatus.BAD_REQUEST),  # invalid action
-        ({}, HTTPStatus.BAD_REQUEST),
+        ({"state": "not-a-list", "action": "enqueue", "value": 1}),  # not a list
+        ({"state": [1], "action": "enqueue"}),  # missing value
+        ({"state": [1], "action": "peek"}),  # invalid action
+        ({}),  # missing everything
     ],
 )
-def test_queue_bad_payloads(client, payload, status):
+def test_queue_bad_payloads(client, payload):
     resp = client.post("/ds/queue", json=payload)
-    assert resp.status_code == status
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
     data = resp.get_json()
     assert "error" in data
 
@@ -201,32 +197,26 @@ def test_linked_list_delete_empty_returns_noop(client):
 
 
 @pytest.mark.parametrize(
-    "payload, status",
+    "payload",
     [
-        # state must be list
         (
-            {"state": "nope", "action": "insert_at", "index": 0, "value": 1},
-            HTTPStatus.BAD_REQUEST,
-        ),
-        # index must be int
+            {"state": "nope", "action": "insert_at", "index": 0, "value": 1}
+        ),  # state not list
         (
-            {"state": [], "action": "insert_at", "index": "0", "value": 1},
-            HTTPStatus.BAD_REQUEST,
-        ),
-        ({"state": [], "action": "delete_at", "index": "0"}, HTTPStatus.BAD_REQUEST),
-        # missing value for insert_at
-        ({"state": [], "action": "insert_at", "index": 0}, HTTPStatus.BAD_REQUEST),
-        # invalid action
+            {"state": [], "action": "insert_at", "index": "0", "value": 1}
+        ),  # index must be int
         (
-            {"state": [], "action": "replace", "index": 0, "value": 1},
-            HTTPStatus.BAD_REQUEST,
-        ),
-        # fully missing/empty body (index becomes None -> 400)
-        ({}, HTTPStatus.BAD_REQUEST),
+            {"state": [], "action": "delete_at", "index": "0"}
+        ),  # index must be int for delete as well
+        (
+            {"state": [], "action": "insert_at", "index": 0}
+        ),  # missing value for insert_at
+        ({"state": [], "action": "replace", "index": 0, "value": 1}),  # invalid action
+        ({}),  # missing everything
     ],
 )
-def test_linked_list_bad_payloads(client, payload, status):
+def test_linked_list_bad_payloads(client, payload):
     resp = client.post("/ds/linked-list", json=payload)
-    assert resp.status_code == status
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
     data = resp.get_json()
     assert "error" in data

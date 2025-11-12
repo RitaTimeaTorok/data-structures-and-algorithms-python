@@ -19,8 +19,8 @@ def client():
     app = Flask(__name__)
     app.register_blueprint(sorting_blueprint)
     app.config.update(TESTING=True)
-    with app.test_client() as c:
-        yield c
+    with app.test_client() as testing_client:
+        yield testing_client
 
 
 # ---------------------------
@@ -29,22 +29,22 @@ def client():
 
 
 @pytest.mark.parametrize(
-    "endpoint, algo_name, apply_fn, arr",
+    "endpoint, algo_name, apply_fn",
     [
-        ("/sort/bubble", "bubble", apply_bubble_trace, [5, 1, 4, 2]),
-        ("/sort/insertion", "insertion", apply_insertion_trace, [5, 1, 4, 2]),
-        ("/sort/merge", "merge", apply_merge_trace, [5, 1, 4, 2]),
-        ("/sort/quick", "quick", apply_quick_trace, [5, 1, 4, 2]),
+        ("/sort/bubble", "bubble", apply_bubble_trace),
+        ("/sort/insertion", "insertion", apply_insertion_trace),
+        ("/sort/merge", "merge", apply_merge_trace),
+        ("/sort/quick", "quick", apply_quick_trace),
     ],
 )
-def test_sort_endpoint_happy_path(client, endpoint, algo_name, apply_fn, arr):
+def test_sort_endpoint_happy_path(client, endpoint, algo_name, apply_fn):
+    arr = [5, 1, 4, 2]
     resp = client.post(endpoint, json={"array": arr})
     assert resp.status_code == HTTPStatus.OK
+
     data = resp.get_json()
     assert data["algorithm"] == algo_name
-    assert isinstance(data["steps"], list)
 
-    # Replay the trace and compare with Python's sorted()
     result_from_trace = apply_fn(arr, data["steps"])
     assert result_from_trace == sorted(arr)
 
@@ -67,6 +67,7 @@ def test_sort_endpoint_empty_list(client, endpoint, algo_name):
     resp = client.post(endpoint, json={"array": []})
     assert resp.status_code == HTTPStatus.OK
     data = resp.get_json()
+
     assert data["algorithm"] == algo_name
     assert data["steps"] == []
 

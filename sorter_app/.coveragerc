@@ -1,12 +1,14 @@
+# track branch coverage
+# define the codebase that should be measures
+
 [run]
 branch = True
 source =
     algorithms
     data_structures
     routes
-# if you use multiprocessing / subprocess:
-# concurrency = multiprocessing,thread
-# parallel = True
+
+# print the actual untested line numbers
 
 [report]
 show_missing = True
@@ -25,9 +27,3 @@ omit =
 
 [html]
 directory = htmlcov
-
-[paths]
-source =
-    algorithms
-    data_structures
-    routes

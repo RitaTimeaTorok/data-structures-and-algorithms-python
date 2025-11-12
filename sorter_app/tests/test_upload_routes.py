@@ -16,8 +16,8 @@ def client():
     app = Flask(__name__)
     app.register_blueprint(upload_blueprint)
     app.config.update(TESTING=True)
-    with app.test_client() as c:
-        yield c
+    with app.test_client() as testing_client:
+        yield testing_client
 
 
 # ---------------------------

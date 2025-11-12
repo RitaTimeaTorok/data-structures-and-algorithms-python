@@ -64,8 +64,3 @@ def upload_array():
             jsonify({"error": "Invalid number in file."}),
             HTTPStatus.BAD_REQUEST,
         )
-    except Exception:
-        return (
-            jsonify({"error": "Failed to read or process file."}),
-            HTTPStatus.BAD_REQUEST,
-        )
