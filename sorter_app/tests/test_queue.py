@@ -7,10 +7,10 @@ from data_structures.queue import enqueue, dequeue
 def apply_queue_trace(initial: List[Any], steps: List[Dict]) -> List[Any]:
     dq: Deque[Any] = deque(initial)
     for step in steps:
-        t = step.get("type")
-        if t == "append":
+        step_type = step.get("type")
+        if step_type == "append":
             dq.append(step["value"])
-        elif t == "popleft":
+        elif step_type == "popleft":
             if dq:
                 dq.popleft()
     return list(dq)

@@ -59,7 +59,7 @@ def sort_insertion():
 @sorting_blueprint.post("/sort/merge")
 def sort_merge():
     data = request.get_json(silent=True) or {}
-    arr = data.get("array", [])
+    arr = data.get("array")
 
     if not isinstance(arr, list):
         return (
@@ -79,7 +79,7 @@ def sort_merge():
 @sorting_blueprint.post("/sort/quick")
 def sort_quick():
     data = request.get_json(silent=True) or {}
-    arr = data.get("array", [])
+    arr = data.get("array")
 
     if not isinstance(arr, list):
         return (
