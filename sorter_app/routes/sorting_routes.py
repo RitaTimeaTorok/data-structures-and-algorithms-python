@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify  # type: ignore
+from http import HTTPStatus
 from algorithms.bubble_sort import bubble_sort
 from algorithms.insertion_sort import insertion_sort
 from algorithms.merge_sort import merge_sort
@@ -20,13 +21,19 @@ def sort_bubble():
 
     # Input validation
     if not isinstance(arr, list):
-        return jsonify({"error": "Body must include 'array' as a JSON list."}), 400
+        return (
+            jsonify({"error": "Body must include 'array' as a JSON list."}),
+            HTTPStatus.BAD_REQUEST,
+        )
     if not all(isinstance(x, (int, float)) for x in arr):
-        return jsonify({"error": "All elements in 'array' must be numbers."}), 400
+        return (
+            jsonify({"error": "All elements in 'array' must be numbers."}),
+            HTTPStatus.BAD_REQUEST,
+        )
 
     # Perform sorting and return trace
     steps = bubble_sort(arr)
-    return jsonify({"algorithm": "bubble", "steps": steps})
+    return jsonify({"algorithm": "bubble", "steps": steps}), HTTPStatus.OK
 
 
 @sorting_blueprint.post("/sort/insertion")
@@ -35,12 +42,18 @@ def sort_insertion():
     arr = data.get("array")
 
     if not isinstance(arr, list):
-        return jsonify({"error": "Body must include 'array' as a JSON list."}), 400
+        return (
+            jsonify({"error": "Body must include 'array' as a JSON list."}),
+            HTTPStatus.BAD_REQUEST,
+        )
     if not all(isinstance(x, (int, float)) for x in arr):
-        return jsonify({"error": "All elements in 'array' must be numbers."}), 400
+        return (
+            jsonify({"error": "All elements in 'array' must be numbers."}),
+            HTTPStatus.BAD_REQUEST,
+        )
 
     steps = insertion_sort(arr)
-    return jsonify({"algorithm": "insertion", "steps": steps})
+    return jsonify({"algorithm": "insertion", "steps": steps}), HTTPStatus.OK
 
 
 @sorting_blueprint.post("/sort/merge")
@@ -49,12 +62,18 @@ def sort_merge():
     arr = data.get("array", [])
 
     if not isinstance(arr, list):
-        return jsonify({"error": "Body must include 'array' as a JSON list."}), 400
+        return (
+            jsonify({"error": "Body must include 'array' as a JSON list."}),
+            HTTPStatus.BAD_REQUEST,
+        )
     if not all(isinstance(x, (int, float)) for x in arr):
-        return jsonify({"error": "All elements in 'array' must be numbers."}), 400
+        return (
+            jsonify({"error": "All elements in 'array' must be numbers."}),
+            HTTPStatus.BAD_REQUEST,
+        )
 
     steps = merge_sort(arr)
-    return jsonify({"algorithm": "merge", "steps": steps})
+    return jsonify({"algorithm": "merge", "steps": steps}), HTTPStatus.OK
 
 
 @sorting_blueprint.post("/sort/quick")
@@ -63,9 +82,15 @@ def sort_quick():
     arr = data.get("array", [])
 
     if not isinstance(arr, list):
-        return jsonify({"error": "Body must include 'array' as a JSON list."}), 400
+        return (
+            jsonify({"error": "Body must include 'array' as a JSON list."}),
+            HTTPStatus.BAD_REQUEST,
+        )
     if not all(isinstance(x, (int, float)) for x in arr):
-        return jsonify({"error": "All elements in 'array' must be numbers."}), 400
+        return (
+            jsonify({"error": "All elements in 'array' must be numbers."}),
+            HTTPStatus.BAD_REQUEST,
+        )
 
     steps = quick_sort(arr)
-    return jsonify({"algorithm": "quick", "steps": steps})
+    return jsonify({"algorithm": "quick", "steps": steps}), HTTPStatus.OK
